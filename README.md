@@ -5,17 +5,16 @@ Mikhail I. Fokin, Viktor V. Nikitin and Anton A. Duchkov
 ## Content
 
 - segmentation.py:
-	General Python module containing the functions to compute de derivatives and 
-	Euler deconvolution.
+(add description)
 	
 - models.py:
 (add description)
 	
 - GMM_example.ipynb:
-	(add description)
+(add description)
 	
 - train_test_Unet_example.ipynb:
-	(add description). 
+(add description). 
 	
   ## Dependencies
 
