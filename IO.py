@@ -4,7 +4,6 @@ import tifffile as tiff
 from sklearn.mixture import GaussianMixture
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-
 def adjustData(im,mask):
     # normalize data
     if(np.max(im) > 1):
@@ -17,7 +16,7 @@ def adjustData(im,mask):
     return (im,mask)
 
 
-def dataGenerator(im_list, label_list, batch_size):
+def dataGenerator3D(im_list, label_list, batch_size):
     i = 0 
     while True:
         image_batch = []
@@ -40,6 +39,29 @@ def dataGenerator(im_list, label_list, batch_size):
             mask_batch.append(mask)
             i += 1
         yield (np.array(image_batch), np.array(mask_batch))
+
+
+def readGMM(model_path, covariance_type='full', tol=0.001, reg_covar=1e-06, max_iter=100, n_init=1):
+    # load GMM params: means, weights, covariances 
+    means = np.load(f'{model_path}_means.npy')
+    weights = np.load(f'{model_path}_weights.npy')
+    cov = np.load(f'{model_path}_cov.npy')
+    # initialize GMM 
+    GMM = GaussianMixture(
+            n_components = len(means),
+            means_init = means, 
+            covariance_type=covariance_type, 
+            tol=tol, 
+            reg_covar=reg_covar, 
+            max_iter=max_iter, 
+            n_init=n_init, 
+            weights_init=weights, 
+            precisions_init=np.linalg.inv(cov))
+    # set GMM params
+    GMM.precisions_cholesky_ = np.linalg.cholesky(np.linalg.inv(cov))
+    GMM.weights_ = weights
+    GMM.means_ = means
+    return(GMM)
 
 
 def writeGMM(model, model_name, save_path):
