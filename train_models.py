@@ -19,19 +19,22 @@ tf.keras.mixed_precision.experimental.set_policy('mixed_float16')
 #------------------------------------------------------------------------
 # set parameters for model training 
 
-model = '3D' # choose 2D or 3D U-net to train
-im_path = 'data/data_patches/3D_256/images/' # path to images
-label_path = 'data/data_patches/3D_256/labels/' # path to masks
-data_format = 'tiff' # format of images and masks
+model = '2D' # choose 2D or 3D U-net to train
+im_path = '/home/m_fokin/NN/Unet_3D_2D/data/data_patches/2D_256/images/' # path to images
+label_path = '/home/m_fokin/NN/Unet_3D_2D/data/data_patches/2D_256/labels/' # path to masks
+data_format = '.tif' # format of images and masks
 
-batch_size = 1 
+batch_size = 10 
 epochs = 15
-input_size = (256, 256, 256, 1)
+input_size = (256, 256, 1)
 # ------------------------------------------------------------------------
 
 # data preparation
-im_list = sorted(glob(f'{im_path}*{data_format }'))
-label_list = sorted(glob(f'{label_path}*{data_format }'))
+im_list = sorted(glob(f'{im_path}*{data_format}'))
+label_list = sorted(glob(f'{label_path}*{data_format}'))
+
+print(f'{im_path}*{data_format}')
+print(f'{label_path}*{data_format}')
 
 # split dataset to training and validation
 im_train_list, im_test_list, label_train_list, label_test_list  = train_test_split(im_list, label_list, train_size=0.8)
@@ -40,29 +43,17 @@ im_train_list, im_test_list, label_train_list, label_test_list  = train_test_spl
 steps_per_epoch = len(im_train_list) // batch_size
 validation_steps = len(im_test_list) // batch_size
 
+# initialize train and validation data generators 
+train_gen = dataGenerator(im_list = im_train_list, label_list = label_train_list, batch_size = batch_size)
+validation_gen = dataGenerator(im_list = im_test_list, label_list = label_test_list, batch_size = batch_size)
+# define and train UNet_3D model
 
 if (model == '3D'):
-
-    # initialize train and validation data generators 
-    train_gen = dataGenerator3D(im_list = im_train_list, label_list = label_train_list, batch_size = batch_size)
-    validation_gen = dataGenerator3D(im_list = im_test_list, label_list = label_test_list, batch_size = batch_size)
-    # define and train UNet_3D model
     model = UNet_3D(input_size = input_size)
-    model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
-    model.summary()
-    model_checkpoint = ModelCheckpoint('UNet_3D.hdf5', monitor='val_loss',verbose=1, save_best_only=True)
-    history = model.fit(train_gen,steps_per_epoch=steps_per_epoch,validation_data = validation_gen, 
-                        validation_steps = validation_steps, epochs=epochs,callbacks=[model_checkpoint])
-
 if (model == '2D'):
-
-    # initialize train and validation data generators 
-    train_gen = dataGenerator2D(im_list = im_train_list, label_list = label_train_list, batch_size = batch_size)
-    validation_gen = dataGenerator2D(im_list = im_test_list, label_list = label_test_list, batch_size = batch_size)
-    # define and train UNet_2D model
     model = UNet_2D(input_size = input_size)
-    model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
-    model.summary()
-    model_checkpoint = ModelCheckpoint('UNet_2D.hdf5', monitor='val_loss',verbose=1, save_best_only=True)
-    history = model.fit(train_gen,steps_per_epoch=steps_per_epoch,validation_data = validation_gen, 
-                        validation_steps = validation_steps, epochs=epochs,callbacks=[model_checkpoint])
+model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
+model.summary()
+model_checkpoint = ModelCheckpoint('./UNet_weights_2D.hdf5', monitor='val_loss',verbose=1, save_best_only=True)
+history = model.fit(train_gen,steps_per_epoch=steps_per_epoch,validation_data = validation_gen, 
+                    validation_steps = validation_steps, epochs=epochs,callbacks=[model_checkpoint])
