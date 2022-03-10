@@ -1,9 +1,10 @@
+from IO import*
+from data import* 
+from Unet_models import*
+
 import tensorflow as tf 
 from glob import glob
 from sklearn.model_selection import train_test_split
-
-from IO import*
-from Unet_models import*
 
 # find availiable GPUs and set memory growth
 gpus = tf.config.experimental.list_physical_devices('GPU')
@@ -44,8 +45,8 @@ steps_per_epoch = len(im_train_list) // batch_size
 validation_steps = len(im_test_list) // batch_size
 
 # initialize train and validation data generators 
-train_gen = dataGenerator(im_list = im_train_list, label_list = label_train_list, batch_size = batch_size)
-validation_gen = dataGenerator(im_list = im_test_list, label_list = label_test_list, batch_size = batch_size)
+train_gen = dataGenerator_3D(im_list = im_train_list, label_list = label_train_list, batch_size = batch_size)
+validation_gen = dataGenerator_3D(im_list = im_test_list, label_list = label_test_list, batch_size = batch_size)
 # define and train UNet_3D model
 
 if (model == '3D'):
