@@ -5,36 +5,40 @@ Mikhail I. Fokin, Viktor V. Nikitin and Anton A. Duchkov
 ## Content
 
 - data.py:
-(add description)
+(file contains data processing functions)
 	
 - IO.py:
-(add description)
+(file contains functions for saving and loading GMM models)
 
 - segmentation.py:
-(add description)
+(file contains functions for segmentation using U-net and GMM models)
 
 - Unet_models.py:
-(add description)
+(file contains definition of 2D and 3D U-net models)
 
 - train_models.py:
-(add description)
+(example of U-nets training)
 	
 - dataset_segmentationipynb:
-(add description)
+(example of using two step segmentation algorithm)
 	
 - dynamic_segmentation.ipynb:
-(add description). 
+(example of using two step segmentation algorithm for dynamic data). 
 	
   ## Dependencies
 
-- Python (version 3.7)
+- Python (version 3.8)
+
 - tensorflow (2.7.0)
 - numpy (1.17.1)
 - scipy (1.1.0)
 - scikit-learn (0.22.1)
 - matplotlib (3.1.1)
-
-  ## License
+- tqdm (4.63.0)
+- opencv-python (4.5.5.64)
+- h5py (3.6.0)
+- tifffile (2022.3.16)
+  ## Licens
 
 BSD 3-Clause License
 
