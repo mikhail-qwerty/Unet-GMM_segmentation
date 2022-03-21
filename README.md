@@ -4,16 +4,25 @@ Mikhail I. Fokin, Viktor V. Nikitin and Anton A. Duchkov
 
 ## Content
 
+- data.py:
+(add description)
+	
+- IO.py:
+(add description)
+
 - segmentation.py:
 (add description)
-	
-- models.py:
+
+- Unet_models.py:
+(add description)
+
+- train_models.py:
 (add description)
 	
-- GMM_example.ipynb:
+- dataset_segmentationipynb:
 (add description)
 	
-- train_test_Unet_example.ipynb:
+- dynamic_segmentation.ipynb:
 (add description). 
 	
   ## Dependencies
