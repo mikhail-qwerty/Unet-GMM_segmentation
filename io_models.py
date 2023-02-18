@@ -1,8 +1,6 @@
-import random 
 import numpy as np
-import tifffile as tiff 
 from sklearn.mixture import GaussianMixture
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
+
 
 def readGMM(model_path, covariance_type='full', tol=0.001, reg_covar=1e-06, max_iter=100, n_init=1):
     # load GMM params: means, weights, covariances 

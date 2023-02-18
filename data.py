@@ -1,16 +1,9 @@
-from sklearn.mixture import GaussianMixture
-import matplotlib.pyplot as plt
-import tifffile as tiff
+import random 
 import h5py as h5
 import numpy as np
-import cv2
-import glob
-import os
-
-import random 
+import tifffile as tiff
 import patchify as patch 
 
-from tqdm import tqdm
 
 def circle_mask(size, radius):
     mask = np.zeros([size, size, size], dtype = np.uint8)
@@ -28,10 +21,10 @@ def univariate_normal(x, mean, variance):
 def adjust_data(im,mask):
     # normalize data
     if(np.max(im) > 1):
-        im = im / 255
+        im = im / im.max()
     if(np.max(mask) > 1):
-        mask = mask /255
-    # reshape data (z, x, y, ncol)
+        mask = mask /mask.max()
+    # reshape data (z, y, x, ncol)
     im = np.reshape(im,im.shape + (1,))
     mask = np.reshape(mask, mask.shape + (1,))
     return (im,mask)
@@ -62,6 +55,14 @@ def dataGenerator_3D(im_list, label_list, batch_size):
         yield (np.array(image_batch), np.array(mask_batch))
 
 
+def prepare_patches(data, patch_size=(256,256,256), patch_step=(128,242,242)):
+    patch_data = patch.patchify(data, patch_size, patch_step)
+    patch_shape = patch_data.shape
+    n = patch_data.shape[0] * patch_data.shape[1] * patch_data.shape[2]
+    patch_data = patch_data.reshape((n, patch_data.shape[3], patch_data.shape[4], patch_data.shape[5],1))
+    return patch_data, patch_shape
+
+
 def recon_3D(data_patches, patch_step, patch_size, recon_shape):
     # initialize arrays 
     rec = np.zeros(recon_shape)
@@ -77,3 +78,18 @@ def recon_3D(data_patches, patch_step, patch_size, recon_shape):
                 rec[i*patch_step[0]:i*patch_step[0] + patch_size[0], j*patch_step[1]:j*patch_step[1] +
                 patch_size[1], k*patch_step[2]:k*patch_step[2] + patch_size[2]] += data_patches[i,j,k,:,:,:]
     return (rec / recon_pattern)
+
+
+def load_h5_dataset(data_path, dset_number = 25, dtype = np.uint8):
+    with h5.File(data_path, 'r') as f:
+        dsets = list(f.keys())
+        data = np.array(f[dsets[dset_number]], dtype)
+    return data
+
+
+def load_tiff_volume():
+    pass
+
+
+def load_tiff_slices():
+    pass
