@@ -64,28 +64,11 @@ def prepare_patches(data, patch_size=(256,256,256), patch_step=(128,242,242)):
     patch_data = patch_data.reshape((n, patch_data.shape[3], patch_data.shape[4], patch_data.shape[5],1))
     return patch_data, patch_shape
 
-'''
-def recon_3D(data_patches, patch_step, patch_size, recon_shape):
-    # initialize arrays 
-    rec = np.zeros(recon_shape)
-    recon_pattern = np.zeros(recon_shape)
-    patched_pattern = patch.patchify(np.ones(recon_shape), patch_size, patch_step)
-    # reconstruct 3D volume from overalaped patches 
-    for i in range(data_patches.shape[0]):
-        for j in range(data_patches.shape[1]):
-            for k in range(data_patches.shape[2]):
-                recon_pattern[i*patch_step[0]:i*patch_step[0] + patch_size[0], j*patch_step[1]:j*patch_step[1] + 
-                patch_size[1], k*patch_step[2]:k*patch_step[2] + patch_size[2]] += patched_pattern[i,j,k,:,:,:]
 
-                rec[i*patch_step[0]:i*patch_step[0] + patch_size[0], j*patch_step[1]:j*patch_step[1] +
-                patch_size[1], k*patch_step[2]:k*patch_step[2] + patch_size[2]] += data_patches[i,j,k,:,:,:]
-    return (rec / recon_pattern)
-'''
-
-def recon_3d(data_patches, patch_step, patch_size, recon_shape):
+def recon_3d(data_patches, patch_step, patch_size, recon_shape, dtype = np.float32):
     # initialize arrays
-    rec = np.zeros(recon_shape)
-    recon_pattern = np.zeros(recon_shape)
+    rec = np.zeros(recon_shape, dtype)
+    recon_pattern = np.zeros(recon_shape, dtype)
 
     # compute the start and end indices for each patch
     i_starts = np.arange(0, recon_shape[0] - patch_size[0] + 1, patch_step[0])
@@ -107,28 +90,6 @@ def recon_3d(data_patches, patch_step, patch_size, recon_shape):
 
     return rec
 
-'''
-def recon_3d(data_patches, patch_step, patch_size, recon_shape):
-    # Initialize arrays
-    rec = np.zeros(recon_shape)
-    recon_pattern = np.zeros(recon_shape)
-
-    # Compute the indices of the voxels covered by each patch
-    i_indices = np.arange(patch_size[0])
-    j_indices = np.arange(patch_size[1])
-    k_indices = np.arange(patch_size[2])
-    ijk_indices = np.ix_(i_indices, j_indices, k_indices)
-    patch_indices = np.array(np.meshgrid(i_indices, j_indices, k_indices, indexing='ij'))
-    voxel_indices = patch_indices[:, :, np.newaxis, np.newaxis] + patch_step[:, np.newaxis, np.newaxis, np.newaxis] * np.arange(data_patches.shape)[np.newaxis, np.newaxis, :, :, :]
-
-
-    # Accumulate the reconstructed 3D volume and the number of times each voxel is reconstructed and covered by a patch
-    np.add.at(rec, tuple(voxel_indices), data_patches)
-    np.add.at(recon_pattern, tuple(voxel_indices), np.ones(data_patches.shape))
-    
-    # Return the element-wise division of the accumulated reconstructed 3D volume and the accumulated number of times each voxel is reconstructed
-    return rec / recon_pattern
-'''
 
 def load_h5_dataset(data_path, dset_number = 25, dtype = np.uint8):
     with h5.File(data_path, 'r') as f:
