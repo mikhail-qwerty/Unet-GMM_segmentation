@@ -3,6 +3,8 @@ import h5py as h5
 import numpy as np
 import tifffile as tiff
 import patchify as patch 
+import numpy.lib.stride_tricks as stride_tricks
+from glob import glob
 
 
 def circle_mask(size, radius):
@@ -62,7 +64,7 @@ def prepare_patches(data, patch_size=(256,256,256), patch_step=(128,242,242)):
     patch_data = patch_data.reshape((n, patch_data.shape[3], patch_data.shape[4], patch_data.shape[5],1))
     return patch_data, patch_shape
 
-
+'''
 def recon_3D(data_patches, patch_step, patch_size, recon_shape):
     # initialize arrays 
     rec = np.zeros(recon_shape)
@@ -78,7 +80,55 @@ def recon_3D(data_patches, patch_step, patch_size, recon_shape):
                 rec[i*patch_step[0]:i*patch_step[0] + patch_size[0], j*patch_step[1]:j*patch_step[1] +
                 patch_size[1], k*patch_step[2]:k*patch_step[2] + patch_size[2]] += data_patches[i,j,k,:,:,:]
     return (rec / recon_pattern)
+'''
 
+def recon_3d(data_patches, patch_step, patch_size, recon_shape):
+    # initialize arrays
+    rec = np.zeros(recon_shape)
+    recon_pattern = np.zeros(recon_shape)
+
+    # compute the start and end indices for each patch
+    i_starts = np.arange(0, recon_shape[0] - patch_size[0] + 1, patch_step[0])
+    j_starts = np.arange(0, recon_shape[1] - patch_size[1] + 1, patch_step[1])
+    k_starts = np.arange(0, recon_shape[2] - patch_size[2] + 1, patch_step[2])
+    i_ends = i_starts + patch_size[0]
+    j_ends = j_starts + patch_size[1]
+    k_ends = k_starts + patch_size[2]
+
+    # compute the sum of the recon_pattern and rec arrays for each patch
+    for i, i_start, i_end in zip(range(len(i_starts)), i_starts, i_ends):
+        for j, j_start, j_end in zip(range(len(j_starts)), j_starts, j_ends):
+            for k, k_start, k_end in zip(range(len(k_starts)), k_starts, k_ends):
+                recon_pattern[i_start:i_end, j_start:j_end, k_start:k_end] += 1
+                rec[i_start:i_end, j_start:j_end, k_start:k_end] += data_patches[i, j, k]
+
+    # divide rec by the recon_pattern to get the final result
+    rec /= recon_pattern
+
+    return rec
+
+'''
+def recon_3d(data_patches, patch_step, patch_size, recon_shape):
+    # Initialize arrays
+    rec = np.zeros(recon_shape)
+    recon_pattern = np.zeros(recon_shape)
+
+    # Compute the indices of the voxels covered by each patch
+    i_indices = np.arange(patch_size[0])
+    j_indices = np.arange(patch_size[1])
+    k_indices = np.arange(patch_size[2])
+    ijk_indices = np.ix_(i_indices, j_indices, k_indices)
+    patch_indices = np.array(np.meshgrid(i_indices, j_indices, k_indices, indexing='ij'))
+    voxel_indices = patch_indices[:, :, np.newaxis, np.newaxis] + patch_step[:, np.newaxis, np.newaxis, np.newaxis] * np.arange(data_patches.shape)[np.newaxis, np.newaxis, :, :, :]
+
+
+    # Accumulate the reconstructed 3D volume and the number of times each voxel is reconstructed and covered by a patch
+    np.add.at(rec, tuple(voxel_indices), data_patches)
+    np.add.at(recon_pattern, tuple(voxel_indices), np.ones(data_patches.shape))
+    
+    # Return the element-wise division of the accumulated reconstructed 3D volume and the accumulated number of times each voxel is reconstructed
+    return rec / recon_pattern
+'''
 
 def load_h5_dataset(data_path, dset_number = 25, dtype = np.uint8):
     with h5.File(data_path, 'r') as f:
@@ -87,9 +137,16 @@ def load_h5_dataset(data_path, dset_number = 25, dtype = np.uint8):
     return data
 
 
+def load_tiff_slices(slices_path, im_size, dtype=np.uint8):
+    flist = glob(f'{slices_path}/*tiff')
+    result = np.zeros([len(flist), im_size, im_size], dtype=dtype)
+    for i, fpath in enumerate(flist):
+        try:
+            result[i] = tiff.imread(fpath)
+        except Exception as e:
+            print(f"Error loading file {fpath}: {e}")
+    return result
+
+
 def load_tiff_volume():
-    pass
-
-
-def load_tiff_slices():
     pass
